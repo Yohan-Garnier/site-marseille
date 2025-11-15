@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mon Compte —  Exiled RP [WL]</title>
+  <link rel="icon" type="image/png" href="logoex.png">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .account-form {
+      background: rgba(18, 18, 26, 0.75);
+      padding: 2rem;
+      border-radius: 12px;
+      border: 1px solid rgba(106, 90, 249, 0.3);
+      backdrop-filter: blur(8px);
+      max-width: 600px;
+      margin: 0 auto;
+      animation: fadeInUp 1s ease-out;
+    }
+    .account-form h2 {
+      color: #6a5af9;
+      margin-bottom: 1.5rem;
+      font-size: 1.8rem;
+    }
+    .form-group {
+      margin-bottom: 1.2rem;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: #c5c6e0;
+      font-size: 0.95rem;
+    }
+    .form-input {
+      width: 100%;
+      padding: 0.85rem;
+      background: rgba(10, 10, 16, 0.7);
+      border: 1px solid rgba(106, 90, 249, 0.4);
+      border-radius: 6px;
+      color: #e0e0ff;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+    }
+    .form-input:focus {
+      border-color: #6a5af9;
+      box-shadow: 0 0 0 2px rgba(106, 90, 249, 0.3);
+    }
+    .btn {
+      margin-top: 0.5rem;
+    }
+    .status {
+      margin-top: 1rem;
+      padding: 0.7rem;
+      border-radius: 6px;
+      text-align: center;
+      font-weight: 500;
+    }
+    .status.success { background: rgba(0, 200, 100, 0.2); color: #80ffaa; }
+    .status.error { background: rgba(255, 80, 80, 0.2); color: #ff8080; }
+  </style>
+</head>
+<body>
+
+  <div class="hamburger" id="hamburger">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="nav-brand">Marseille RP [WL]</div>
+      <button class="close-btn" id="close-sidebar">×</button>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="staff.html">Accueil</a>
+      <a href="ticket.html">Ticket</a>
+      <a href="serveurblacklist.html">Serveur BLACKLIST</a>
+      <a href="referentielsanction.html">Référentiel de sanction</a>
+      <a href="demandedeban.html">Demande de débannissement</a>
+      <a href="absence.html">Faire une absence</a>
+      <a href="sanction.html">Nouvelle sanction</a>
+      <a href="sanctionhistorique.html">Historique de sanction</a>
+      <a href="mnémotechnique.html">Mnémotechnique</a>
+      <a href="demission.html">Démission</a>
+      <a href="mon-compte.html"><strong>Mon compte</strong></a>
+    </nav>
+  </aside>
+
+  <div class="overlay" id="overlay"></div>
+
+  <main>
+    <section class="section">
+      <div class="account-form">
+        <h2>👤 Mon Compte</h2>
+        <p style="color: #a9a9d6; margin-bottom: 1.5rem;">
+          Connecté en tant que : <strong id="current-email"></strong>
+        </p>
+
+        <!-- Modifier l'email -->
+        <div class="form-group">
+          <label for="newEmail">Changer d'email</label>
+          <input type="email" id="newEmail" class="form-input" placeholder="nouveau@email.com" />
+          <button onclick="updateEmail()" class="btn primary">Mettre à jour l'email</button>
+        </div>
+
+        <!-- Modifier le mot de passe -->
+        <div class="form-group">
+          <label for="oldPassword">Ancien mot de passe</label>
+          <input type="password" id="oldPassword" class="form-input" />
+          <label for="newPassword">Nouveau mot de passe</label>
+          <input type="password" id="newPassword" class="form-input" />
+          <button onclick="updatePassword()" class="btn primary">Mettre à jour le mot de passe</button>
+        </div>
+
+        <div id="status-message"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 Exiled RP [WL] — Tous droits réservés.</p>
+  </footer>
+
+  <!-- 🔥 Firebase COMPAT -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBcB45diMSO7rWWzp25EdqLHrhgENM7jj0",
+      authDomain: "marseille-rp-73905.firebaseapp.com",
+      projectId: "marseille-rp-73905",
+      storageBucket: "marseille-rp-73905.firebasestorage.app",
+      messagingSenderId: "633653493501",
+      appId: "1:633653493501:web:94210bcc5a99d6fd114894"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    function showStatus(message, isSuccess = true) {
+      const el = document.getElementById('status-message');
+      el.className = `status ${isSuccess ? 'success' : 'error'}`;
+      el.textContent = message;
+      setTimeout(() => el.textContent = '', 5000);
+    }
+
+    // 🔐 Vérifier que l'utilisateur est connecté
+    auth.onAuthStateChanged((user) => {
+      if (user) {
+        document.getElementById('current-email').textContent = user.email;
+      } else {
+        window.location.href = 'login.html';
+      }
+    });
+
+    // 📧 Modifier l'email
+    window.updateEmail = async function() {
+      const newEmail = document.getElementById('newEmail').value.trim();
+      if (!newEmail) return showStatus('Veuillez entrer un email.', false);
+
+      const user = auth.currentUser;
+      if (!user) return showStatus('Session expirée.', false);
+
+      user.updateEmail(newEmail)
+        .then(() => {
+          showStatus('✅ Email mis à jour !');
+          document.getElementById('current-email').textContent = newEmail;
+          document.getElementById('newEmail').value = '';
+        })
+        .catch((error) => {
+          let msg = error.message;
+          if (msg.includes('invalid-email')) msg = '📧 Email invalide.';
+          else if (msg.includes('email-already-in-use')) msg = '📧 Cet email est déjà utilisé.';
+          else msg = 'Erreur : ' + msg;
+          showStatus(msg, false);
+        });
+    };
+
+    // 🔑 Modifier le mot de passe
+    window.updatePassword = async function() {
+      const oldPass = document.getElementById('oldPassword').value;
+      const newPass = document.getElementById('newPassword').value;
+      if (!oldPass || !newPass) return showStatus('Tous les champs sont requis.', false);
+      if (newPass.length < 6) return showStatus('🔑 Le mot de passe doit avoir au moins 6 caractères.', false);
+
+      const user = auth.currentUser;
+      if (!user) return showStatus('Session expirée.', false);
+
+      // 🔁 Réauthentifier l'utilisateur (obligatoire pour updatePassword)
+      const credential = firebase.auth.EmailAuthProvider.credential(user.email, oldPass);
+      user.reauthenticateWithCredential(credential)
+        .then(() => user.updatePassword(newPass))
+        .then(() => {
+          showStatus('✅ Mot de passe mis à jour !');
+          document.getElementById('oldPassword').value = '';
+          document.getElementById('newPassword').value = '';
+        })
+        .catch((error) => {
+          let msg = error.message;
+          if (msg.includes('wrong-password')) msg = '🔒 Ancien mot de passe incorrect.';
+          else if (msg.includes('user-mismatch')) msg = '🔒 Utilisateur non reconnu.';
+          else msg = 'Erreur : ' + msg;
+          showStatus(msg, false);
+        });
+    };
+
+    // 🚪 Déconnexion globale
+    window.signOut = function() {
+      auth.signOut().then(() => window.location.href = 'login.html');
+    };
+  </script>
+
+  <!-- Sidebar JS -->
+  <script>
+    const hamburger = document.getElementById('hamburger');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+    const closeBtn = document.getElementById('close-sidebar');
+
+    if (hamburger) hamburger.addEventListener('click', () => {
+      sidebar.classList.add('active');
+      overlay.classList.add('active');
+      hamburger.style.display = 'none';
+    });
+
+    if (closeBtn) closeBtn.addEventListener('click', () => {
+      sidebar.classList.remove('active');
+      overlay.classList.remove('active');
+      hamburger.style.display = 'flex';
+    });
+
+    if (overlay) overlay.addEventListener('click', () => {
+      sidebar.classList.remove('active');
+      overlay.classList.remove('active');
+      hamburger.style.display = 'flex';
+    });
+  </script>
+</body>
+</html>

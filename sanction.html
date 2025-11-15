@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Redirection sécurisée — Référentiel</title>
+  <link rel="icon" type="image/png" href="logoex.png">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    body {
+      background-color: #0f0f14;
+      color: #e0e0ff;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      overflow: hidden;
+      position: relative;
+    }
+    .redirect-container {
+      text-align: center;
+      padding: 2rem;
+      background: rgba(18, 18, 26, 0.7);
+      border: 1px solid rgba(106, 90, 249, 0.3);
+      border-radius: 12px;
+      backdrop-filter: blur(6px);
+      max-width: 600px;
+      animation: fadeIn 1s ease-out;
+    }
+    .redirect-container h1 {
+      color: #6a5af9;
+      margin-bottom: 1rem;
+      font-size: 1.6rem;
+    }
+    .redirect-container p {
+      color: #a9a9d6;
+      margin: 0.5rem 0;
+    }
+  </style>
+  <!-- Firebase COMPAT -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+<!-- Auth Guard -->
+<script src="js/auth-guard.js"></script>
+
+<script>
+  // Initialiser la protection
+  protectPage((user) => {
+    // Optionnel : afficher l'email, charger des données, etc.
+    console.log('Utilisateur connecté :', user.email);
+  });
+</script>
+</head>
+<body>
+
+  <div class="redirect-container">
+    <h1>🔐 Redirection sécurisée</h1>
+    <p>Vérification de votre session en cours...</p>
+    <p id="status">Veuillez patienter.</p>
+  </div>
+
+  <!-- 🔥 Firebase COMPAT (pas de module) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBcB45diMSO7rWWzp25EdqLHrhgENM7jj0",
+      authDomain: "marseille-rp-73905.firebaseapp.com",
+      projectId: "marseille-rp-73905",
+      storageBucket: "marseille-rp-73905.firebasestorage.app",
+      messagingSenderId: "633653493501",
+      appId: "1:633653493501:web:94210bcc5a99d6fd114894"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    const FORM_URL = "https://forms.gle/bMBjQ2VRSDdx48sn6";
+
+    auth.onAuthStateChanged((user) => {
+      const status = document.getElementById('status');
+      if (user) {
+        status.textContent = "Redirection vers le référentiel de sanction...";
+        setTimeout(() => {
+          window.location.href = FORM_URL;
+        }, 1000);
+      } else {
+        status.textContent = "❌ Accès refusé. Veuillez vous connecter.";
+        // Optionnel : rediriger vers login après 3s
+        setTimeout(() => {
+          window.location.href = 'login.html';
+        }, 3000);
+      }
+    });
+  </script>
+</body>
+</html>

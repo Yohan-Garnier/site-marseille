@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin — Créer un compte</title>
+  <link rel="icon" type="image/png" href="logoex.png">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .admin-form {
+      background: rgba(18, 18, 26, 0.75);
+      padding: 2rem;
+      border-radius: 12px;
+      border: 1px solid rgba(106, 90, 249, 0.3);
+      backdrop-filter: blur(8px);
+      max-width: 500px;
+      margin: 2rem auto;
+      color: #e0e0ff;
+    }
+    .admin-form input {
+      width: 100%; padding: 0.8rem; margin: 0.6rem 0;
+      background: rgba(10, 10, 16, 0.7);
+      border: 1px solid rgba(106, 90, 249, 0.4);
+      border-radius: 6px;
+      color: #e0e0ff;
+      font-family: 'Inter', sans-serif;
+    }
+    .btn { margin-top: 1rem; }
+    #status { margin-top: 1rem; padding: 0.7rem; border-radius: 6px; }
+  </style>
+</head>
+<body>
+
+  <main>
+    <div class="admin-form">
+      <h2>🛠️ Créer un compte staff</h2>
+      <input type="email" id="email" placeholder="Email du staff" />
+      <input type="password" id="password" placeholder="Mot de passe temporaire (min. 6 caractères)" />
+      <button onclick="signUp()" class="btn primary">Créer le compte</button>
+      <div id="status"></div>
+    </div>
+  </main>
+
+  <!-- Firebase COMPAT -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBcB45diMSO7rWWzp25EdqLHrhgENM7jj0",
+      authDomain: "marseille-rp-73905.firebaseapp.com",
+      projectId: "marseille-rp-73905",
+      storageBucket: "marseille-rp-73905.firebasestorage.app",
+      messagingSenderId: "633653493501",
+      appId: "1:633653493501:web:94210bcc5a99d6fd114894"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    window.signUp = function() {
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const status = document.getElementById('status');
+
+      if (!email || !password || password.length < 6) {
+        status.textContent = '⚠️ Email et mot de passe (6+ caractères) requis.';
+        status.style.cssText = 'background:rgba(255,80,80,0.2); color:#ff8080;';
+        return;
+      }
+
+      auth.createUserWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+          const uid = userCredential.user.uid;
+          return db.collection('users').doc(uid).set({
+            email: email,
+            mustChangePassword: true,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+        })
+        .then(() => {
+          status.textContent = '✅ Compte + drapeau créés !';
+          status.style.cssText = 'background:rgba(0,200,100,0.2); color:#80ffaa;';
+          document.getElementById('email').value = '';
+          document.getElementById('password').value = '';
+        })
+        .catch((error) => {
+          let msg = error.message;
+          if (msg.includes('email-already-in-use')) msg = '📧 Cet email existe déjà.';
+          status.textContent = '❌ ' + msg;
+          status.style.cssText = 'background:rgba(255,80,80,0.2); color:#ff8080;';
+        });
+    };
+  </script>
+</body>
+</html>
